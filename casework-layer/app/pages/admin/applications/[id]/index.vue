@@ -11,7 +11,7 @@ import { provideApplicationEvents } from '~/composables/useApplicationEvents';
 import { staffFetch } from '~~/casework-layer/app/composables/api/useStaffSessionFetch';
 import { useApplicationEventTargets } from '~/composables/useApplicationEventTargets';
 import ApplicationEventMenu from '~~/casework-layer/app/components/admin/ApplicationEventMenu.vue';
-import { APPLICATION_MESSAGE_COMPOSER, registeredApplicationEvents } from '~/utils/application-events';
+import { APPLICATION_MESSAGE_COMPOSER, flashEventTarget, registeredApplicationEvents } from '~/utils/application-events';
 import { useAdminApplicationEvents } from '~~/casework-layer/app/composables/useAdminApplicationEvents';
 import type { AdminAssignmentSelection } from '~~/casework-layer/app/composables/useAdminApplicationAssignment';
 import type { FormSchema } from '~/types/form';
@@ -495,7 +495,8 @@ async function focusEvent(kind: AdminApplicationEventKind) {
         if (!current() || !section || (kind !== 'message' && section.getAttribute('data-event-ready') === 'false')) return false;
         if (kind === 'message') {
             section.focus({ preventScroll: true });
-            section.scrollIntoView({ block: 'start' });
+            section.scrollIntoView({ block: 'nearest' });
+            flashEventTarget(section);
         }
         const reached = kind === 'message' || eventTargets.focus(kind);
         if (reached) {

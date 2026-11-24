@@ -140,3 +140,17 @@ textarea:not(.font-mono) {
   outline: 2px solid var(--ui-primary);
   outline-offset: 4px;
 }
+/* After a jump from the application list: a ring in the primary color that fades out (flashEventTarget). */
+/* Held at full strength first, then faded. Keyboard focus keeps its own ring (:focus-visible above). */
+@keyframes event-flash {
+  0%, 50% { outline-color: var(--ui-primary); }
+  100% { outline-color: transparent; }
+}
+[data-event-flash]:not(:focus-visible) {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 4px;
+  animation: event-flash 2s ease-out forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-event-flash]:not(:focus-visible) { animation: none; }
+}

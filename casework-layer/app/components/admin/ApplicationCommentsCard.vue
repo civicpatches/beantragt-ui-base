@@ -42,7 +42,7 @@ defineExpose({
     region
     :data-event-ready="!loading && !showSkeleton && !loadFailed"
     tabindex="-1"
-    class="mb-6 scroll-mt-4"
+    class="mb-6 scroll-my-4"
     :title="t('comments.title')"
     icon="i-lucide-message-circle"
     :count="comments.length"

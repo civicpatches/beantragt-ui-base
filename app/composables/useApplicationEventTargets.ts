@@ -1,7 +1,7 @@
 import { computed, onMounted, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import type { Ref } from 'vue';
 import type { AdminApplicationEventCounts, AdminApplicationEventKind, AdminApplicationEvents } from '~/types';
-import { APPLICATION_EVENTS, registeredApplicationEvents } from '~/utils/application-events';
+import { APPLICATION_EVENTS, flashEventTarget, registeredApplicationEvents } from '~/utils/application-events';
 
 interface Target {
     kind: AdminApplicationEventKind
@@ -165,7 +165,9 @@ export function useApplicationEventTargets(options: Options) {
         cursor.value = { ...cursor.value, [kind]: target.id };
         target.element.setAttribute('tabindex', '-1');
         target.element.focus({ preventScroll: true });
-        target.element.scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+        // Scroll only as far as needed, so the case header stays in view when it can.
+        target.element.scrollIntoView({ block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+        flashEventTarget(target.element);
         // Clicking a pill is an explicit read of this element only.
         void read(target);
         return true;

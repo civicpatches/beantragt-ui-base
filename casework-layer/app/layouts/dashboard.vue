@@ -175,7 +175,12 @@ const productMenuItems = computed<DropdownMenuItem[]>(() => {
             'aria-label': t('nav.linkOpensInNewTab', { label })
         });
     }
-    items.push({ type: 'label', label: version ? `beantragt.ai ${version}` : 'beantragt.ai' });
+    // The product line links the product website like the citizen footer does (NUXT_PUBLIC_WEBSITE_URL).
+    const product = version ? `beantragt.ai ${version}` : 'beantragt.ai';
+    const websiteHref = httpLinkHref(runtime.websiteUrl);
+    items.push(websiteHref
+        ? { 'label': product, 'icon': 'i-lucide-globe', 'to': websiteHref, 'target': '_blank', 'rel': 'noopener', 'aria-label': t('nav.linkOpensInNewTab', { label: `${product}, ${t('nav.productWebsite')}` }) }
+        : { type: 'label', label: product });
     return items;
 });
 

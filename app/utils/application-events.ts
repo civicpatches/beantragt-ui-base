@@ -106,3 +106,23 @@ export function normalizeApplicationEventSnapshot(value: unknown): AdminApplicat
     }
     return result;
 }
+
+/** How long the ring after a jump from the application list stays, matching the CSS animation. */
+export const EVENT_FLASH_MS = 2000;
+const flashTimers = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>();
+
+/**
+ * Marks the element a jump from the application list landed on. A programmatic focus after a
+ * mouse click shows no focus ring, so `[data-event-flash]` draws one that fades out.
+ */
+export function flashEventTarget(element: HTMLElement) {
+    clearTimeout(flashTimers.get(element));
+    element.removeAttribute('data-event-flash');
+    // Restart the animation when the same element is the target again.
+    void element.offsetWidth;
+    element.setAttribute('data-event-flash', '');
+    flashTimers.set(element, setTimeout(() => {
+        element.removeAttribute('data-event-flash');
+        flashTimers.delete(element);
+    }, EVENT_FLASH_MS));
+}
