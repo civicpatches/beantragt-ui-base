@@ -1,0 +1,19 @@
+{
+    "$comment": "Source exceptions for pnpm check:layers. Every entry must still match. Open builds reject all Pro modules.",
+    "imports": [],
+    "identifiers": [],
+    "tags": [],
+    "duplicates": [
+        {
+            "kind": "component",
+            "key": "StaffAppHeaderAdministrationLink",
+            "reason": "empty base stub that the layer replaces with priority 100, the one deliberate override (contract 2.1)"
+        },
+        {
+            "kind": "component",
+            "key": "StaffLoginAdministrationLink",
+            "reason": "empty base stub that the layer replaces with priority 100, the one deliberate override (contract 2.1)"
+        }
+    ],
+    "testReferences": []
+}

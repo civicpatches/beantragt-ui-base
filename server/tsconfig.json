@@ -1,0 +1,3 @@
+{
+  "extends": "../.nuxt-casework/tsconfig.server.json"
+}

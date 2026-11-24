@@ -1,0 +1,167 @@
+name: Open UI CI
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NUXT_BUILD_SCOPE: casework
+      NODE_OPTIONS: --max-old-space-size=4096
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+      - name: Enable pnpm
+        run: corepack enable
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm run lint
+      - name: Layer boundary
+        run: pnpm run check:layers
+      - name: Translation coverage
+        run: pnpm run i18n:check
+      - name: Unit tests
+        run: pnpm run test:unit
+      - name: Typecheck
+        run: pnpm run typecheck
+      - name: Strict casework build
+        run: pnpm run build:casework
+
+  image:
+    if: github.ref_type != 'tag'
+    strategy:
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Build images
+        run: |
+          docker build -t beantragt-ui:ci .
+
+  release-images:
+    if: github.event_name == 'push' && github.ref_type == 'tag' && github.repository_owner == 'civicpatches'
+    needs: [checks, gitleaks]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    env:
+      IMAGE_DESCRIPTION: >-
+        Release snapshot without maintenance. For operation with real data, the operator
+        builds and updates the images or uses the hosted service.
+        beantragt.ai has not reached version 1.0 yet.
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
+        with:
+          platforms: arm64
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Publish and sign versioned images
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          version="$GITHUB_REF_NAME"
+          [[ "$version" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
+          source_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+          revision="$(git rev-parse HEAD)"
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          unset GHCR_TOKEN
+          trap 'docker logout ghcr.io' EXIT
+
+          image_digest() {
+            docker buildx imagetools inspect "$1:$version" --format '{{.Manifest.Digest}}'
+          }
+
+          publish_image() {
+            local image="ghcr.io/civicpatches/beantragt-$1" context="$2"
+            local digest manifest failure
+            shift 2
+            failure="$(mktemp)"
+            if ! digest="$(image_digest "$image" 2>"$failure")"; then
+              if ! grep -qiE '(^|: )(manifest unknown|[^[:space:]]+: not found)$' "$failure"; then
+                cat "$failure" >&2
+                return 1
+              fi
+              docker buildx build --platform linux/amd64,linux/arm64 \
+                --provenance=mode=max --sbom=true \
+                --label "org.opencontainers.image.description=$IMAGE_DESCRIPTION" \
+                --label "org.opencontainers.image.source=$source_url" \
+                --label "org.opencontainers.image.revision=$revision" \
+                --label "org.opencontainers.image.version=$version" \
+                --annotation "index:org.opencontainers.image.description=$IMAGE_DESCRIPTION" \
+                --annotation "index:org.opencontainers.image.source=$source_url" \
+                --annotation "index:org.opencontainers.image.revision=$revision" \
+                --tag "$image:$version" --push "$@" "$context"
+              digest="$(image_digest "$image")"
+            fi
+            rm -f "$failure"
+            [[ "$digest" =~ ^sha256:[a-f0-9]{64}$ ]]
+            # Existing version tags are immutable. Only resume signing a matching,
+            # multi-platform index that includes per-platform attestations.
+            manifest="$(docker buildx imagetools inspect --raw "$image@$digest")"
+            jq -e --arg source "$source_url" --arg revision "$revision" '
+              . as $manifest
+              | .annotations["org.opencontainers.image.source"] == $source
+              and .annotations["org.opencontainers.image.revision"] == $revision
+              and (
+                [.manifests[] | select(.platform.os == "linux")] as $platforms
+                | ($platforms | map(.platform.architecture) | sort) == ["amd64", "arm64"]
+                and all($platforms[];
+                  .digest as $platform
+                  | any($manifest.manifests[];
+                    .annotations["vnd.docker.reference.type"] == "attestation-manifest"
+                    and .annotations["vnd.docker.reference.digest"] == $platform
+                  )
+                )
+              )
+            ' <<< "$manifest" > /dev/null
+            local identity="$GITHUB_SERVER_URL/$GITHUB_WORKFLOW_REF"
+            local issuer="https://token.actions.githubusercontent.com"
+            if ! cosign verify --certificate-identity "$identity" --certificate-oidc-issuer "$issuer" "$image@$digest"; then
+              cosign sign --yes "$image@$digest"
+              cosign verify --certificate-identity "$identity" --certificate-oidc-issuer "$issuer" "$image@$digest"
+            fi
+          }
+
+          publish_image ui .
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Scan tracked source
+        run: >-
+          docker run --rm -v "$PWD:/repo:ro"
+          ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+          dir /repo --redact=100 --no-banner --ignore-gitleaks-allow --max-archive-depth 2

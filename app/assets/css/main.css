@@ -1,0 +1,142 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/*
+ * The installation's theme, generated at build time from `NUXT_UI_THEME` or, without
+ * it, from today's look (`app/utils/theme/current.ts`): the font family with the product's fallback chain, the
+ * palettes, and the `--ui-*` tokens of `:root, .light` and `.dark`, including the contrast floor C8 and
+ * `--ui-border-control`. Imported here, right after the framework, so Tailwind compiles its `@theme` blocks with
+ * them; unlayered, so its tokens win over Nuxt UI's `@layer theme`. Its fonts are self-hosted by @nuxt/fonts
+ * (`nuxt.config.ts` `fonts.families`, from the same theme). This file keeps only what a theme document cannot
+ * express: the rules and scoped variables below.
+ */
+@import "#build/beantragt-theme.css";
+
+textarea:not(.font-mono) {
+    font-family: var(--font-sans);
+    line-height: 1.55;
+    min-height: 6rem;
+}
+
+/* Form controls draw their outline and their placeholder from the control tokens. */
+:where(input, textarea, [role="combobox"], [role="checkbox"], [role="radio"], .form-control) {
+    --ui-border-accented: var(--ui-border-control);
+    --ui-text-dimmed: var(--ui-text-muted);
+}
+
+:where([role="switch"]) {
+    --ui-bg-accented: var(--ui-border-control);
+}
+
+/* Keyboard focus ring at full strength (WCAG 1.4.11, 3:1). Nuxt UI draws it as
+ * `outline-<colour>/25 focus-visible:outline-3`: a quarter of the colour on the
+ * page, about 1.4:1. These rules give the same classes the full colour token.
+ * The product rule (`app/utils/theme/primary-rule.ts`) already holds
+ * `--ui-primary` at 3:1 against the page in light and dark, for every tenant.
+ * Layered on purpose: inside `utilities` and after Tailwind's own rules, so they
+ * beat the 25 % mix at equal weight and a place class such as
+ * `focus-visible:outline-error` still wins. The selectors are the ones Tailwind
+ * generates for the classes in every file under `.nuxt/ui` (the prose forms `[&_a]:`, `[&>a]:`,
+ * `[&>code]:` included, although no prose component is rendered today); the unit test
+ * `tests/unit/focus-ring-contrast.test.ts` fails when the theme gains a form
+ * that is not listed here.
+ *
+ * Gap (WCAG 1.4.11 asks 3:1 against every adjacent colour): Nuxt UI draws the
+ * ring at offset 0, so on a control filled with the ring's own colour (solid
+ * button, checked checkbox or switch, active pill tab) ring and fill touch at
+ * 1:1 and no ring is visible. The plain form `outline-<colour>/25`, which sits
+ * on the element itself, therefore gets a 2 px gap: the page shows between fill
+ * and ring. Not on fields (`(has-)focus-visible:ring-<colour>`): never filled, border and ring already make one band.
+ * Toggles (reka `data-state` checked, unchecked, indeterminate) keep it in every state, so the ring never jumps.
+ * `:where()` keeps the weight of the bare class. The other forms keep Nuxt UI's offset:
+ * - `before:` (navigation menu, tree, code tree): the `::before` only ever fills
+ *   with `bg-elevated`, never its own colour, and spans the full row of a
+ *   scrolling sidebar, where a gap would be clipped.
+ * - `[&>tr]:data-[selectable=true]:` (table row): Nuxt UI insets it on purpose
+ *   (`-outline-offset-3`), the table clips with `overflow-clip`.
+ * - `[&_a]:`, `[&_a]:[&>code]:`, `[&>a]:`, `[&>code]:` (prose links): text on no
+ *   fill of its own colour, the ring stays tight to the text.
+ * The gap is its own rule so the colour rules stay one declaration each. */
+@layer utilities {
+    .outline-primary\/25,
+    .before\:outline-primary\/25::before,
+    .\[\&\>tr\]\:data-\[selectable\=true\]\:outline-primary\/25 > tr[data-selectable="true"],
+    .\[\&_a\]\:outline-primary\/25 a,
+    .\[\&_a\]\:\[\&\>code\]\:outline-primary\/25 a > code,
+    .\[\&\>a\]\:outline-primary\/25 > a,
+    .\[\&\>code\]\:outline-primary\/25 > code {
+        outline-color: var(--ui-primary);
+    }
+
+    .outline-secondary\/25,
+    .before\:outline-secondary\/25::before,
+    .\[\&_a\]\:outline-secondary\/25 a,
+    .\[\&_a\]\:\[\&\>code\]\:outline-secondary\/25 a > code {
+        outline-color: var(--ui-secondary);
+    }
+
+    .outline-success\/25,
+    .before\:outline-success\/25::before,
+    .\[\&_a\]\:outline-success\/25 a,
+    .\[\&_a\]\:\[\&\>code\]\:outline-success\/25 a > code {
+        outline-color: var(--ui-success);
+    }
+
+    .outline-info\/25,
+    .before\:outline-info\/25::before,
+    .\[\&_a\]\:outline-info\/25 a,
+    .\[\&_a\]\:\[\&\>code\]\:outline-info\/25 a > code {
+        outline-color: var(--ui-info);
+    }
+
+    .outline-warning\/25,
+    .before\:outline-warning\/25::before,
+    .\[\&_a\]\:outline-warning\/25 a,
+    .\[\&_a\]\:\[\&\>code\]\:outline-warning\/25 a > code {
+        outline-color: var(--ui-warning);
+    }
+
+    .outline-error\/25,
+    .before\:outline-error\/25::before,
+    .\[\&_a\]\:outline-error\/25 a,
+    .\[\&_a\]\:\[\&\>code\]\:outline-error\/25 a > code {
+        outline-color: var(--ui-error);
+    }
+
+    .outline-inverted\/25,
+    .before\:outline-inverted\/25::before {
+        outline-color: var(--ui-border-inverted);
+    }
+
+    .outline-primary\/25:where(:not(.focus-visible\:ring-primary):not(.has-focus-visible\:ring-primary), [data-state="checked"], [data-state="unchecked"], [data-state="indeterminate"]),
+    .outline-secondary\/25:where(:not(.focus-visible\:ring-secondary):not(.has-focus-visible\:ring-secondary), [data-state="checked"], [data-state="unchecked"], [data-state="indeterminate"]),
+    .outline-success\/25:where(:not(.focus-visible\:ring-success):not(.has-focus-visible\:ring-success), [data-state="checked"], [data-state="unchecked"], [data-state="indeterminate"]),
+    .outline-info\/25:where(:not(.focus-visible\:ring-info):not(.has-focus-visible\:ring-info), [data-state="checked"], [data-state="unchecked"], [data-state="indeterminate"]),
+    .outline-warning\/25:where(:not(.focus-visible\:ring-warning):not(.has-focus-visible\:ring-warning), [data-state="checked"], [data-state="unchecked"], [data-state="indeterminate"]),
+    .outline-error\/25:where(:not(.focus-visible\:ring-error):not(.has-focus-visible\:ring-error), [data-state="checked"], [data-state="unchecked"], [data-state="indeterminate"]),
+    .outline-inverted\/25:where(:not(.focus-visible\:ring-inverted):not(.has-focus-visible\:ring-inverted), [data-state="checked"], [data-state="unchecked"], [data-state="indeterminate"]) {
+        outline-offset: 2px;
+    }
+}
+
+/*
+ * A tooltip whose content takes no pointer events (the step hints of the
+ * field bar, `ui.content: 'pointer-events-none'`) stood in Reka's popper wrapper, which kept
+ * `pointer-events: auto` over the same box and caught the click meant for the card below. Reka sets
+ * the wrapper's style itself and offers no prop for it, so the wrapper follows its content here.
+ */
+[data-reka-popper-content-wrapper]:has(> [data-slot="content"].pointer-events-none) {
+    pointer-events: none;
+}
+
+/* Exact event elements: leave room for the focus outline after jumping. */
+[data-event-target] {
+  scroll-margin-block: 5rem;
+}
+/* Keep row spacing stable as event markers come and go. */
+.application-event-entry { margin-top: 0.875rem; }
+.application-event-entry + .application-event-entry { margin-top: 1.375rem; }
+[data-event-target]:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 4px;
+}

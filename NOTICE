@@ -1,0 +1,25 @@
+# Hinweise zu beantragt.ai, Bürgerportal und Sachbearbeitung
+
+Die Civic Patches GmbH lizenziert den eigenen Code unter AGPL-3.0-only. Die Zusatzbestimmungen nach AGPL §§ 7(b) und 7(c) stehen in `LICENSE`.
+
+> Enthält Software aus beantragt.ai; Lizenzgeberin des betreffenden Materials: Civic Patches GmbH (https://civic-patches.de)
+
+Die Bestimmungen gelten für entsprechend gekennzeichnetes Material, zu dessen Lizenzierung Civic Patches GmbH berechtigt ist. Der lesbare Herkunftshinweis bleibt in den rechtlichen Angaben der Werke erhalten, die dieses Material oder Bearbeitungen davon enthalten. Gestaltung, Sprache und technisch geeignete Darstellung dürfen angepasst werden. Verlinkung und Platzierung im Footer sind freiwillig. Bearbeitungen sind angemessen als geändert zu kennzeichnen. Unabhängige Programme bleiben bei bloßer API-Kommunikation außerhalb des Geltungsbereichs.
+
+Nach § 13 der AGPL benötigen Nutzende einer geänderten Netzwerkfassung ein auffälliges, kostenloses Angebot des vollständigen zugehörigen Quellcodes der eingesetzten Fassung. Für die Weitergabe von Code gelten zusätzlich die Bedingungen der AGPL.
+
+Die sechs Übernahmen aus Nuxt UI behalten MIT-Text und Urheberhinweis in `app/utils/theme/NOTICE.md`. Weitere Bestandteile sind in `THIRD-PARTY-NOTICES.md` erfasst. Bei Änderungen sind die anwendbaren Lizenz- und Herkunftshinweise sowie der Verweis auf die Zusatzbestimmungen für erfasstes Material zu erhalten. Markenrechtliche Angaben stehen in `TRADEMARKS.md`.
+
+## English translation (the German text above is authoritative)
+
+### Notices for the beantragt.ai citizen portal and casework interface
+
+Civic Patches GmbH licenses its own code under AGPL-3.0-only. The additional terms under AGPL §§ 7(b) and 7(c) are in `LICENSE`.
+
+> Contains software from beantragt.ai. Civic Patches GmbH is the licensor of the material concerned (https://civic-patches.de)
+
+The terms apply to material marked accordingly that Civic Patches GmbH is entitled to license. The legible attribution notice is retained in the legal notices of works that contain this material or modifications of it. Design, language and technically suitable presentation may be adapted. An active link and placement in the footer are optional. Modified versions are marked as modified in an appropriate manner. Independent programs that merely communicate through an API remain outside the scope of these terms.
+
+Under § 13 of the AGPL, users of a modified version running over a network are offered prominent access, at no charge, to the complete corresponding source code of the version in use. Distribution of code is also subject to the AGPL terms.
+
+The six files adapted from Nuxt UI retain the MIT text and copyright notice in `app/utils/theme/NOTICE.md`. Other components are listed in `THIRD-PARTY-NOTICES.md`. When changes are made, the applicable license and attribution notices and the reference to the additional terms for covered material are retained. Trademark information is available in `TRADEMARKS.md`.

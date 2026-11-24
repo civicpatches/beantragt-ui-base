@@ -1,0 +1,234 @@
+{
+    "nuxtUi": "4.11.3",
+    "appConfig": [
+        "UAlert",
+        "UBadge",
+        "UToast"
+    ],
+    "components": {
+        "UAlert": {
+            "color": "neutral",
+            "variant": "subtle"
+        },
+        "UAvatarGroup": {
+            "color": "neutral",
+            "size": "md"
+        },
+        "UAvatar": {
+            "color": "neutral",
+            "size": "md"
+        },
+        "UBadge": {
+            "color": "primary",
+            "variant": "subtle",
+            "size": "md"
+        },
+        "UBanner": {
+            "color": "primary"
+        },
+        "UBlogPost": {
+            "variant": "outline"
+        },
+        "UBreadcrumb": {
+            "color": "primary"
+        },
+        "UButton": {
+            "color": "primary",
+            "variant": "solid",
+            "size": "md"
+        },
+        "UCalendar": {
+            "color": "primary",
+            "variant": "solid",
+            "size": "md"
+        },
+        "UCard": {
+            "variant": "outline"
+        },
+        "UChatMessage": {
+            "color": "neutral",
+            "variant": "naked"
+        },
+        "UChatPrompt": {
+            "color": "primary",
+            "variant": "outline"
+        },
+        "UCheckboxGroup": {
+            "color": "primary",
+            "variant": "list",
+            "size": "md"
+        },
+        "UCheckbox": {
+            "color": "primary",
+            "variant": "list",
+            "size": "md"
+        },
+        "UChip": {
+            "color": "primary",
+            "size": "md"
+        },
+        "UColorPicker": {
+            "size": "md"
+        },
+        "UCommandPalette": {
+            "size": "md"
+        },
+        "UContextMenu": {
+            "size": "md"
+        },
+        "UDashboardSearch": {
+            "size": "md"
+        },
+        "UDropdownMenu": {
+            "size": "md"
+        },
+        "UEditorEmojiMenu": {
+            "size": "md"
+        },
+        "UEditorMentionMenu": {
+            "size": "md"
+        },
+        "UEditorSuggestionMenu": {
+            "size": "md"
+        },
+        "UEmpty": {
+            "variant": "outline",
+            "size": "md"
+        },
+        "UFieldGroup": {
+            "size": "md"
+        },
+        "UFileUpload": {
+            "color": "primary",
+            "variant": "area",
+            "size": "md"
+        },
+        "UFormField": {
+            "size": "md"
+        },
+        "UInputDate": {
+            "color": "primary",
+            "variant": "outline",
+            "size": "md"
+        },
+        "UInputMenu": {
+            "color": "primary",
+            "variant": "outline",
+            "size": "md"
+        },
+        "UInputNumber": {
+            "color": "primary",
+            "variant": "outline",
+            "size": "md"
+        },
+        "UInputRating": {
+            "color": "primary",
+            "size": "md"
+        },
+        "UInputTags": {
+            "color": "primary",
+            "variant": "outline",
+            "size": "md"
+        },
+        "UInputTime": {
+            "color": "primary",
+            "variant": "outline",
+            "size": "md"
+        },
+        "UInput": {
+            "color": "primary",
+            "variant": "outline",
+            "size": "md"
+        },
+        "UKbd": {
+            "color": "neutral",
+            "variant": "outline",
+            "size": "md"
+        },
+        "UListbox": {
+            "color": "primary",
+            "size": "md"
+        },
+        "UNavigationMenu": {
+            "color": "primary",
+            "variant": "pill"
+        },
+        "UPageCard": {
+            "variant": "outline"
+        },
+        "UPageCta": {
+            "variant": "outline"
+        },
+        "UPinInput": {
+            "color": "primary",
+            "variant": "outline",
+            "size": "md"
+        },
+        "UPricingPlan": {
+            "variant": "outline"
+        },
+        "UProgressGroup": {
+            "color": "primary",
+            "size": "md"
+        },
+        "UProgress": {
+            "color": "primary",
+            "size": "md"
+        },
+        "URadioGroup": {
+            "color": "primary",
+            "variant": "list",
+            "size": "md"
+        },
+        "USelectMenu": {
+            "color": "primary",
+            "variant": "outline",
+            "size": "md"
+        },
+        "USelect": {
+            "color": "primary",
+            "variant": "outline",
+            "size": "md"
+        },
+        "USeparator": {
+            "color": "neutral",
+            "size": "xs"
+        },
+        "USlider": {
+            "color": "primary",
+            "size": "md"
+        },
+        "UStepper": {
+            "color": "primary",
+            "size": "md"
+        },
+        "USwitch": {
+            "color": "primary",
+            "size": "md"
+        },
+        "UTabs": {
+            "color": "primary",
+            "variant": "pill",
+            "size": "md"
+        },
+        "UTextarea": {
+            "color": "primary",
+            "variant": "outline",
+            "size": "md"
+        },
+        "UTimeline": {
+            "color": "primary",
+            "size": "md"
+        },
+        "UToast": {
+            "color": "neutral"
+        },
+        "UTree": {
+            "color": "primary",
+            "size": "md"
+        },
+        "UUser": {
+            "size": "md"
+        }
+    }
+}

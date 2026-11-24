@@ -1,0 +1,160 @@
+/* Print Stylesheet for beantragt.ai
+   Optimized for A4 application printouts.
+   Adapted from Mark-a-Spot print patterns. */
+
+@media print {
+  /* ── Hide non-print elements ────────────────────────────────── */
+  .print-hide,
+  [data-no-print] {
+    display: none !important;
+  }
+
+  /* ── Force light colors (dark mode support) ─────────────────── */
+  html {
+    color-scheme: light !important;
+  }
+
+  body {
+    background: white !important;
+    color: #111 !important;
+    color-scheme: light !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  html.dark,
+  html.dark body {
+    background: white !important;
+    color: #111 !important;
+  }
+
+  /* ── Page settings ──────────────────────────────────────────── */
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+
+  /* ── Print page layout ──────────────────────────────────────── */
+  /* ── Screen frame of the print view: no page fill, no sheet outline or shadow (04) ── */
+  .print-screen {
+    background: transparent !important;
+    min-height: 0 !important;
+  }
+
+  .print-sheet {
+    margin: 0 !important;
+    max-width: none !important;
+    box-shadow: none !important;
+  }
+
+  .print-page {
+    padding: 0 !important;
+    padding-bottom: 18mm !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  /* ── Preserve background colors on meta block and badges ────── */
+  .print-meta {
+    background: #f5f5f5 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ── Section break control ──────────────────────────────────── */
+  .print-section {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  .print-meta,
+  .print-archive-section,
+  .print-attachment-group,
+  .print-section-title {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print-section-title {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Avoid breaking inside a single field */
+  .print-field {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* ── Truncated text expansion ───────────────────────────────── */
+  [class*="truncate"],
+  [class*="line-clamp"] {
+    overflow: visible !important;
+    text-overflow: unset !important;
+    white-space: normal !important;
+    -webkit-line-clamp: unset !important;
+  }
+
+  /* ── Footer positioning ─────────────────────────────────────── */
+  .print-footer {
+    position: static !important;
+    border-top: 1pt solid #ccc !important;
+    padding-top: 6pt !important;
+    margin-top: 10mm !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* ── Links: show URL after text ─────────────────────────────── */
+  a[href]:not(.print-no-url)::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #666;
+  }
+
+  /* ── Status badges with color preservation ──────────────────── */
+  [class*="rounded-full"][style*="background"] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ── QR code placeholder ────────────────────────────────────── */
+  .print-qr-code {
+    display: block !important;
+    width: 80px !important;
+    height: 80px !important;
+    position: fixed !important;
+    bottom: 1cm !important;
+    right: 1cm !important;
+  }
+
+  /* ── Images ─────────────────────────────────────────────────── */
+  img {
+    max-width: 100% !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Dark mode text overrides: light text would vanish on white paper.
+     Before the neutral rule below, so muted text stays grey. */
+  [class*="dark:text-"] {
+    color: #111 !important;
+  }
+
+  /* ── Neutral text colors for readability ─────────────────────── */
+  [class*="text-neutral-400"],
+  [class*="text-neutral-500"],
+  [class*="text-neutral-600"] {
+    color: #555 !important;
+  }
+
+  /* Dark mode background overrides */
+  [class*="dark:bg-"] {
+    background-color: transparent !important;
+  }
+}
+
+/* Screen: hide print-only elements */
+.print-qr-code {
+  display: none;
+}
