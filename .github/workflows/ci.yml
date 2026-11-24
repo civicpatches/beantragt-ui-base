@@ -151,7 +151,7 @@ jobs:
             fi
           }
 
-          publish_image ui .
+          publish_image ui-base .
 
   gitleaks:
     runs-on: ubuntu-latest
