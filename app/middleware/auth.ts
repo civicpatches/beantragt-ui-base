@@ -8,6 +8,7 @@ import {
     publicLoginPath,
     publicWorkspaceFromRoute
 } from '~/utils/public-form-path';
+import { isSsoErrorCode } from '~/utils/sso-error';
 
 export default defineNuxtRouteMiddleware(async (to) => {
     const { authenticated, checkStatus } = useAuth();
@@ -19,10 +20,15 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     // If still not authenticated, redirect to login
     if (!authenticated.value) {
+        const { sso_error: ssoError, ...query } = to.query;
+        const redirect = ssoError === undefined
+            ? to.fullPath
+            : useRouter().resolve({ path: to.path, query, hash: to.hash }).fullPath;
         return navigateTo({
             path: publicLoginPath(publicWorkspaceFromRoute(to)),
             query: {
-                redirect: to.fullPath
+                redirect,
+                ...(isSsoErrorCode(ssoError) ? { sso_error: ssoError } : {})
             }
         });
     }

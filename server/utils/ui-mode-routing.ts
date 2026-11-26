@@ -2,6 +2,7 @@ import { createRouter, defineEventHandler, type H3Event, type RouterMethod } fro
 import { createRouterMatcher, type RouteRecordRaw } from 'vue-router';
 import type { UiHandler, UiPage } from '../../shared/ui-mode';
 import { canonicalUiPath, uiPageDocument } from '../../shared/ui-path';
+import { isSsoNamespace, ssoOperation } from './sso-routing';
 
 export function uiRoutePolicy(handlers: UiHandler[], pages: UiPage[]) {
     // Use the same method/dynamic/catch-all selection as Nitro, with inert marker handlers.
@@ -23,6 +24,7 @@ export function uiRoutePolicy(handlers: UiHandler[], pages: UiPage[]) {
     }
 
     return async (path: string, method: string) => {
+        if (isSsoNamespace(path) && !ssoOperation(path)) return { denied: 'api' } as const;
         const canonical = canonicalUiPath(path);
         const record = await handler(path, method);
         const normalized = path === canonical ? record : await handler(canonical, method);

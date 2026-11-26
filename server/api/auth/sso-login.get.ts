@@ -1,36 +1,29 @@
 import { safeExternalAuthReturnPath } from '~/utils/public-form-path';
+import { appBasePath } from '#shared/app-base-path';
+import { setPrivateNoStore } from '../../utils/request-security';
+import { rejectSsoRequest, SSO_PROVIDER_ID } from '../../utils/sso-routing';
+import { ssoPublicUiUrl } from '../../utils/sso-runtime';
 
 /**
  * GET /api/auth/sso-login
  *
- * Starts an SSO login by redirecting the browser to Drupal. The browser must
- * visit Drupal directly so the ACS flow can establish the real Drupal session
- * cookie. Frontend never fakes authentication.
+ * Starts SSO on the UI origin, where the ACS also receives the browser response.
  */
 export default defineEventHandler((event) => {
-    const config = useRuntimeConfig();
+    const config = useRuntimeConfig(event);
     const query = getQuery(event);
-    const provider = typeof query.provider === 'string' && /^[a-zA-Z0-9_-]+$/.test(query.provider)
+    const provider = typeof query.provider === 'string' && SSO_PROVIDER_ID.test(query.provider)
         ? query.provider
         : config.ssoBundidProvider;
+    if (!SSO_PROVIDER_ID.test(provider)) return rejectSsoRequest(event, 503);
 
-    const requestUrl = getRequestURL(event);
     const fallbackPath = '/meine-antraege';
     const rawReturnTo = typeof query.returnTo === 'string' ? query.returnTo : fallbackPath;
     const returnPath = safeExternalAuthReturnPath(rawReturnTo, fallbackPath);
-    const returnTo = `${requestUrl.origin}${returnPath}`;
+    const base = config.app.baseURL;
+    const returnTo = `${ssoPublicUiUrl(event)?.origin ?? ''}${appBasePath(base, returnPath)}`;
+    const search = new URLSearchParams({ returnTo });
 
-    const publicApiBase = typeof config.public.apiBase === 'string' ? config.public.apiBase : '';
-    if (!publicApiBase) {
-        throw createError({
-            statusCode: 500,
-            message: 'errors.server.configuration',
-            data: { code: 'errors.server.configuration' }
-        });
-    }
-
-    const target = new URL(`/auth/sso/${encodeURIComponent(provider)}/login`, publicApiBase);
-    target.searchParams.set('returnTo', returnTo);
-
-    return sendRedirect(event, target.toString(), 302);
+    setPrivateNoStore(event);
+    return sendRedirect(event, `${appBasePath(base, `/auth/sso/${provider}/login`)}?${search}`, 302);
 });

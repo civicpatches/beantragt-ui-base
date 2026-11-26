@@ -181,7 +181,7 @@
       </form>
 
       <div
-        v-if="ssoBundidEnabled"
+        v-if="bundIdAvailable"
         class="mt-8"
         data-testid="login-bundid"
       >
@@ -304,6 +304,9 @@ import CitizenPage from '~/components/citizen/Page.vue';
 import AppExtensionOutlet from '~/components/AppExtensionOutlet.vue';
 import AppProductLinks from '~/components/AppProductLinks.vue';
 import { useLoadedPublicJurisdictionConfig } from '~/composables/usePublicJurisdictionConfig';
+import { useBundidAvailability } from '~/composables/useBundidAvailability';
+import { ssoErrorMessageKey } from '~/utils/sso-error';
+import { appBasePath } from '#shared/app-base-path';
 import {
     ADMIN_ENTRY_PATH,
     publicAdministrationPath,
@@ -324,7 +327,7 @@ const router = useRouter();
 const route = useRoute();
 const runtimeConfig = useRuntimeConfig();
 const citizenHost = runtimeConfig.public.uiMode === 'citizen';
-const ssoBundidEnabled = computed(() => !citizenHost && Boolean(runtimeConfig.public.ssoBundidEnabled));
+const bundIdAvailable = useBundidAvailability();
 const publicWorkspace = computed(() => publicWorkspaceFromRoute(route));
 const tenantConfig = useLoadedPublicJurisdictionConfig(() => publicWorkspace.value.jurisdictionSlug);
 const applicationsPath = computed(() => publicApplicationsPath(publicWorkspace.value));
@@ -420,11 +423,11 @@ const displayError = computed(() => error.value || landingError.value);
  * a refresh does not repeat the message. Keep `redirect` intact for login.
  */
 onMounted(() => {
-    if (!route.query.sso_error && !route.query.session_expired) return;
+    if (route.query.sso_error === undefined && !route.query.session_expired) return;
 
     landingError.value = route.query.session_expired
         ? t('auth.login.sessionExpired')
-        : t('auth.login.ssoError');
+        : t(ssoErrorMessageKey(route.query.sso_error));
 
     const {
         sso_error: _ssoError,
@@ -606,15 +609,14 @@ async function handleVerifyCode() {
 }
 
 /**
- * Start BundID/SSO login. The server route redirects to Drupal so the final
- * session is a real Drupal cookie session.
+ * Start BundID through the same-origin SSO route.
  */
 function handleBundIdLogin() {
     landingError.value = null;
     ssoLoading.value = true;
     const returnPath = safeExternalAuthReturnPath(citizenReturnPath(), applicationsPath.value);
     const target = `/api/auth/sso-login?returnTo=${encodeURIComponent(returnPath)}`;
-    window.location.assign(target);
+    window.location.assign(appBasePath(runtimeConfig.app.baseURL, target));
 }
 
 /**

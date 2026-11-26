@@ -1,4 +1,5 @@
 import { publicLoginPath, publicWorkspaceFromRoute } from '~/utils/public-form-path';
+import { isSsoErrorCode } from '~/utils/sso-error';
 
 import { canonicalUiPath, uiPageDocument } from '#shared/ui-path';
 
@@ -12,5 +13,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     const auth = useAuth();
     await auth.ensureStatus();
     const login = publicLoginPath(publicWorkspaceFromRoute(to));
-    if (auth.notAllowedOnHost.value && to.path !== login) return navigateTo(login, { replace: true });
+    if (auth.notAllowedOnHost.value && to.path !== login) {
+        const ssoError = to.query.sso_error;
+        const target = isSsoErrorCode(ssoError) ? { path: login, query: { sso_error: ssoError } } : login;
+        return navigateTo(target, { replace: true });
+    }
 });

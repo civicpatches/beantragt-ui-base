@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { useAttrs, useId } from 'vue';
+import { useBundidAvailability } from '~/composables/useBundidAvailability';
+import { ssoErrorMessageKey } from '~/utils/sso-error';
+import { appBasePath } from '#shared/app-base-path';
 import type { PublicFormPathInput } from '~/utils/public-form-path';
 import type {
     SubmissionIdentityData,
@@ -48,7 +51,8 @@ const fieldIdBase = computed(() => typeof attrs.id === 'string' && attrs.id ? at
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const runtimeConfig = useRuntimeConfig();
+const { app: { baseURL } } = useRuntimeConfig();
+const bundIdAvailable = useBundidAvailability();
 const auth = useAuth();
 const ssoLoading = ref(false);
 const ssoError = ref<string | null>(null);
@@ -63,11 +67,9 @@ onMounted(() => {
         void auth.checkStatus();
     }
 
-    // Drupal redirects a failed SAML/BundID ACS back to this form page with
-    // `?sso_error=1`. Surface a readable message and strip the param so a
-    // refresh does not re-show it.
-    if (route.query.sso_error) {
-        ssoError.value = t('auth.login.ssoError');
+    // Clear the one-time SSO error after surfacing it.
+    if (route.query.sso_error !== undefined) {
+        ssoError.value = t(ssoErrorMessageKey(route.query.sso_error));
         const { sso_error: _ssoError, ...rest } = route.query;
         void router.replace({ query: rest, hash: route.hash });
     }
@@ -91,15 +93,13 @@ const allowedProviders = computed(() => new Set(props.requirements.providers.map
 const matchesProvider = computed(() => allowedProviders.value.size > 0 && allowedProviders.value.has(currentProvider.value));
 const isCitizenSession = computed(() => shouldUseAuthSession.value && auth.authenticated.value && !isStaffSession.value && matchesProvider.value);
 const isUnsupportedCitizenSession = computed(() => shouldUseAuthSession.value && auth.authenticated.value && !isStaffSession.value && !matchesProvider.value);
-const canUseBundId = computed(() =>
-    props.requirements.providers.includes('bundid')
-    && runtimeConfig.public.uiMode !== 'citizen'
-    && Boolean(runtimeConfig.public.ssoBundidEnabled)
-);
+const allowsBundId = computed(() => props.requirements.providers.includes('bundid'));
+const canUseBundId = computed(() => allowsBundId.value && bundIdAvailable.value === true);
 const canUsePasswordless = computed(() => props.requirements.providers.includes('passwordless'));
 const canUseAuth = computed(() => props.requirements.authMode !== 'anonymous' && (canUsePasswordless.value || canUseBundId.value));
 const authRequired = computed(() => props.requirements.authMode === 'required');
-const hasUnavailableRequiredProvider = computed(() => authRequired.value && !canUseAuth.value && !isCitizenSession.value);
+const hasUnavailableRequiredProvider = computed(() => authRequired.value && !canUseAuth.value && !isCitizenSession.value
+  && (!allowsBundId.value || bundIdAvailable.value === false));
 const showFullName = computed(() => props.requirements.fullName !== 'none');
 const showEmail = computed(() => props.requirements.email !== 'none');
 const hasSupplementalFields = computed(() => showFullName.value || showEmail.value);
@@ -193,7 +193,7 @@ async function handleBundIdLogin() {
     emit('authRedirect', 'bundid');
     ssoLoading.value = true;
     const target = `/api/auth/sso-login?returnTo=${encodeURIComponent(returnPath.value)}`;
-    window.location.assign(target);
+    window.location.assign(appBasePath(baseURL, target));
 }
 
 function handlePasswordlessLogin() {

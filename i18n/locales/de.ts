@@ -1840,6 +1840,16 @@ export default {
             bundId: 'Mit BundID anmelden',
             orBundId: 'Oder mit der BundID:',
             ssoError: 'Die Anmeldung mit BundID ist fehlgeschlagen. Bitte versuchen Sie es erneut oder nutzen Sie einen anderen Anmeldeweg.',
+            ssoErrors: {
+                rateLimited: 'Sie haben es zu oft versucht. Bitte warten Sie kurz und starten Sie die Anmeldung dann erneut.',
+                unavailable: 'Die Anmeldung mit BundID ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.',
+                loginFailed: 'Die Anmeldung mit BundID konnte nicht gestartet werden. Bitte versuchen Sie es erneut.',
+                acsRejected: 'Die Anmeldebestätigung von BundID konnte nicht geprüft werden. Bitte starten Sie die Anmeldung erneut.',
+                assuranceInsufficient: 'Für diesen Dienst reicht Ihre BundID-Anmeldung nicht aus. Bitte melden Sie sich bei der BundID mit einer sichereren Methode an, zum Beispiel mit dem Online-Ausweis.',
+                accountIneligible: 'Mit diesem Konto können Sie sich hier nicht anmelden. Bitte verwenden Sie ein anderes Konto.',
+                accountPrivileged: 'Ein Konto mit Verwaltungsrechten kann hier nicht mit BundID verknüpft werden. Bitte verwenden Sie ein anderes Konto.',
+                mockNotAllowed: 'Die Testanmeldung ist auf dieser Seite nicht verfügbar.'
+            },
             sessionExpired: 'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.',
             codeSentPrefix: 'Wir haben eine E-Mail an',
             codeSentSuffix: 'gesendet. Geben Sie den Code unten ein.',

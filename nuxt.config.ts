@@ -29,7 +29,7 @@ const layers = citizenOnly
         ? [caseworkLayerPath]
         : [proLayerPath, caseworkLayerPath].filter(path => existsSync(path));
 const defaultApiBase = isDev ? 'https://beantragt.ddev.site' : 'http://nginx:8080';
-const defaultPublicApiBase = isDev ? 'https://beantragt.ddev.site' : '';
+const devUiPublicUrl = isDev ? process.env.NUXT_UI_PUBLIC_URL || process.env.UI_PUBLIC_URL || 'http://localhost:3000' : '';
 // Theme of the installation: `NUXT_UI_THEME` names a preset of the Nuxt UI
 // theme engine or a theme document (.json, relative to the project root) at build time; without it, today's look
 // (`app/utils/theme/current.ts`). A theme that fails the contrast rule, an unknown name or an unreadable file throws
@@ -276,10 +276,12 @@ export default defineNuxtConfig({
         drupalServicePassword,
         trustProxyIpHeaders: process.env.NUXT_TRUST_PROXY_IP_HEADERS === 'true' || process.env.TRUST_PROXY_IP_HEADERS === 'true',
         adminCaseReadLimitPerMinute: DEFAULT_ADMIN_CASE_READ_LIMIT_PER_MINUTE,
+        uiPublicUrl: devUiPublicUrl,
         ssoBundidProvider: process.env.NUXT_SSO_BUNDID_PROVIDER || (isDev ? 'bundid_mock' : 'bundid'),
+        ssoBundidHealthUrl: '',
         public: {
             uiMode: 'citizen' as 'citizen' | 'all',
-            apiBase: process.env.NUXT_PUBLIC_API_BASE || defaultPublicApiBase,
+            apiBase: process.env.NUXT_PUBLIC_API_BASE || devUiPublicUrl,
             defaultWorkspace: '',
             // Operator-controlled MapLibre styles. The legacy value remains a
             // fallback for existing deployments. Keep all values empty to

@@ -1840,6 +1840,16 @@ export default {
             bundId: 'Sign in with BundID',
             orBundId: 'Or with BundID:',
             ssoError: 'BundID sign-in failed. Please try again or use a different sign-in method.',
+            ssoErrors: {
+                rateLimited: 'You have tried too many times. Please wait a moment before starting sign-in again.',
+                unavailable: 'BundID sign-in is temporarily unavailable. Please try again later.',
+                loginFailed: 'BundID sign-in could not be started. Please try again.',
+                acsRejected: 'The BundID sign-in confirmation could not be verified. Please start sign-in again.',
+                assuranceInsufficient: 'Your BundID sign-in is not sufficient for this service. Please sign in to BundID with a stronger method, for example your online ID card.',
+                accountIneligible: 'You cannot sign in here with this account. Please use a different account.',
+                accountPrivileged: 'An account with administration privileges cannot be linked to BundID here. Please use a different account.',
+                mockNotAllowed: 'Test sign-in is unavailable on this site.'
+            },
             sessionExpired: 'Your session has expired. Please sign in again.',
             codeSentPrefix: 'We sent an email to',
             codeSentSuffix: '. Enter the code below.',

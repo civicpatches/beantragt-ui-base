@@ -2,6 +2,18 @@
 
 Changes of the open edition. Earlier releases were not published.
 
+## 0.8.0 (2026-11-26)
+
+### Features
+
+* proxy SSO through the UI origin
+
+### Bug Fixes
+
+* clarify stronger BundID sign-in guidance
+* explain insufficient BundID assurance
+* harden SSO pass-through and recovery
+
 ## 0.7.3 (2026-11-24)
 
 Maintenance release without changes to this component.

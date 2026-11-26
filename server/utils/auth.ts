@@ -56,6 +56,7 @@ interface DrupalRequestHeaderOptions {
     accept?: string
     contentType?: string
     cookieHeader?: string
+    publicUrl?: URL
 }
 
 interface DrupalSessionRequestOptions {
@@ -64,6 +65,7 @@ interface DrupalSessionRequestOptions {
     headers?: Record<string, string>
     body?: string | Buffer
     maxResponseBytes?: number
+    redirect?: RequestRedirect
 }
 
 interface DrupalSessionResponse {
@@ -137,11 +139,14 @@ export function buildDrupalRequestHeaders(
         headers['X-Forwarded-For'] = clientIp;
     }
 
-    const publicDrupalUrl = getExternalDrupalUrl(event);
-    if (publicDrupalUrl && shouldForwardPublicDrupalHost(config.apiBase, publicDrupalUrl)) {
+    const publicDrupalUrl = options.publicUrl ?? getExternalDrupalUrl(event);
+    if (publicDrupalUrl && (options.publicUrl || shouldForwardPublicDrupalHost(config.apiBase, publicDrupalUrl))) {
         headers.Host = publicDrupalUrl.host;
         headers['X-Forwarded-Host'] = publicDrupalUrl.host;
         headers['X-Forwarded-Proto'] = publicDrupalUrl.protocol.replace(':', '');
+        if (options.publicUrl) {
+            headers['X-Forwarded-Port'] = publicDrupalUrl.port || (publicDrupalUrl.protocol === 'https:' ? '443' : '80');
+        }
     }
 
     return headers;
@@ -241,7 +246,8 @@ export function drupalSessionRequest(
             method,
             signal: options.signal,
             headers,
-            body: fetchBody
+            body: fetchBody,
+            redirect: options.redirect
         }).then(response => sessionResponseFromFetch(response, options.maxResponseBytes));
     }
 
@@ -258,6 +264,7 @@ export function drupalSessionRequest(
         (requestOptions as https.RequestOptions).rejectUnauthorized = false;
     }
 
+    // Native HTTP(S) requests always return the first response.
     const client = url.protocol === 'https:' ? https : http;
 
     return new Promise((resolve, reject) => {
@@ -440,7 +447,7 @@ export function requireAuth(event: H3Event): void {
 /**
  * Returns the authenticated Drupal user for the forwarded browser session.
  */
-export async function getAuthenticatedUser(event: H3Event, freshCookie?: string, signal?: AbortSignal): Promise<AuthUser> {
+export async function getAuthenticatedUser(event: H3Event, freshCookie?: string, signal?: AbortSignal, publicUrl?: URL): Promise<AuthUser> {
     if (freshCookie === undefined && event.context.authUser) {
         return event.context.authUser as AuthUser;
     }
@@ -456,8 +463,10 @@ export async function getAuthenticatedUser(event: H3Event, freshCookie?: string,
 
     const cookieHeader = freshCookie ?? (getHeader(event, 'cookie') || '');
     const response = await drupalSessionRequest(event, '/auth/status', {
-        headers: buildDrupalRequestHeaders(event, { accept: 'application/json', cookieHeader }),
-        signal
+        headers: buildDrupalRequestHeaders(event, { accept: 'application/json', cookieHeader, publicUrl }),
+        signal,
+        redirect: publicUrl ? 'manual' : undefined,
+        maxResponseBytes: publicUrl ? 512 * 1024 : undefined
     });
 
     if (!response.ok) {
@@ -620,7 +629,7 @@ export function getOptionalServiceAuthHeader(): string {
  * authenticated session (not the anonymous token).
  * Results are cached per session for 30 minutes.
  */
-export async function fetchCsrfToken(cookieHeader: string, event?: H3Event, signal?: AbortSignal): Promise<string> {
+export async function fetchCsrfToken(cookieHeader: string, event?: H3Event, signal?: AbortSignal, publicUrl?: URL): Promise<string> {
     const config = useRuntimeConfig();
     const apiBase = event ? getDrupalSessionApiBase(event) : config.apiBase;
     if (!apiBase) {
@@ -642,7 +651,9 @@ export async function fetchCsrfToken(cookieHeader: string, event?: H3Event, sign
         const response = event
             ? await drupalSessionRequest(event, '/session/token', {
                 signal,
-                headers: buildDrupalRequestHeaders(event, { accept: 'text/plain', cookieHeader })
+                headers: buildDrupalRequestHeaders(event, { accept: 'text/plain', cookieHeader, publicUrl }),
+                redirect: publicUrl ? 'manual' : undefined,
+                maxResponseBytes: publicUrl ? 512 * 1024 : undefined
             })
             : await fetch(`${apiBase}/session/token`, {
                 method: 'GET',

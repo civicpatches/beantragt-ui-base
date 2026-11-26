@@ -50,7 +50,7 @@ export function classifyHandlers(root: string, handlers: Handler[]): UiHandler[]
         const origin = framework ? 'nuxt' : originOf(root, record.handler, 'handler');
         let access: UiAccess = origin === 'base' || origin === 'nuxt' ? 'open' : 'closed';
         if (origin === 'base') {
-            if (path === '/api/auth/sso-login' || path === '/api/**:path'
+            if (path === '/api/**:path'
               || /^\/api\/(?:internal|ai|intelligence)(?:\/|$)/u.test(path)) {
                 access = 'closed';
             }

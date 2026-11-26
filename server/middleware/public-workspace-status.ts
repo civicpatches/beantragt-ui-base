@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3';
+import { appBasePath } from '#shared/app-base-path';
 import { publicStartPath, publicWorkspacePath } from '../../app/utils/public-form-path';
 import {
     isPublicWorkspaceDocumentRequest,
@@ -34,10 +35,13 @@ export default defineEventHandler(async (event) => {
     const url = getRequestURL(event);
     const method = getMethod(event);
     const accept = getHeader(event, 'accept');
+    const base = useRuntimeConfig(event).app.baseURL.replace(/\/$/u, '');
+    if (base && url.pathname !== base && !url.pathname.startsWith(`${base}/`)) return;
+    const pathname = url.pathname.slice(base.length) || '/';
 
-    if (!isPublicWorkspaceDocumentRequest(method, url.pathname, accept)) return;
+    if (!isPublicWorkspaceDocumentRequest(method, pathname, accept)) return;
 
-    const scope = publicWorkspaceRouteScope(url.pathname);
+    const scope = publicWorkspaceRouteScope(pathname);
     if (!scope) return;
 
     if (!scope.valid) {
@@ -50,10 +54,10 @@ export default defineEventHandler(async (event) => {
     if (exists) return;
 
     const startPath = publicStartPath(scope);
-    const path = (url.pathname.replace(/\/+$/u, '') || '/').toLowerCase();
+    const path = (pathname.replace(/\/+$/u, '') || '/').toLowerCase();
     if (path !== publicWorkspacePath(scope) && path !== startPath) {
         setHeader(event, 'Cache-Control', 'private, no-store, max-age=0');
-        return sendRedirect(event, startPath, 302);
+        return sendRedirect(event, appBasePath(base, startPath), 302);
     }
 
     // Falls through to the app document with status 404 (the Nuxt renderer

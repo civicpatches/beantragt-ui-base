@@ -31,6 +31,7 @@ export const rateLimits = {
     public_document_file: { max: 60, windowMs: 60_000 }, // 60/min
     auth_request: { max: 5, windowMs: 60_000 }, // 5/min
     auth_verify: { max: 5, windowMs: 60_000 }, // 5/min
+    sso_login: { max: 30, windowMs: 10 * 60_000 }, // 30/10min
     geocoding: { max: 30, windowMs: 60_000 }, // 30/min
     excel_export: { max: 5, windowMs: 60_000 }, // 5/min
     integration_transition: { max: 10, windowMs: 60_000 },
@@ -300,16 +301,17 @@ export function getRequestClientIp(event: H3Event): string {
     return getForwardableClientIp(event) ?? getClientIp(event);
 }
 
-export function getTrustedProxyClientIp(event: H3Event): string {
+export function getProxyHeaderClientIp(event: H3Event): string | null {
     const realIp = normalizeProxyIpHeader(getHeader(event, 'x-real-ip'));
     if (realIp) return realIp;
 
     // Only the nearest proxy's hop is eligible; the client can supply the prefix.
-    const forwardedFor = normalizeProxyIpHeader(getHeader(event, 'x-forwarded-for')?.split(',').at(-1));
-    if (forwardedFor) return forwardedFor;
+    return normalizeProxyIpHeader(getHeader(event, 'x-forwarded-for')?.split(',').at(-1));
+}
 
+export function getTrustedProxyClientIp(event: H3Event): string {
     // Do not re-read a rejected X-Real-IP when no socket address is available.
-    return getRequestIP(event, { xForwardedFor: false }) || 'unknown';
+    return getProxyHeaderClientIp(event) || getRequestIP(event, { xForwardedFor: false }) || 'unknown';
 }
 
 function getClientIpFromRequest(event: H3Event): string {

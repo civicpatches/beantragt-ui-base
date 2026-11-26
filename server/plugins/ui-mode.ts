@@ -1,11 +1,12 @@
 import { handlers, pages } from '#ui-mode-manifest';
 import { apiNotFound } from '../utils/api-not-found';
-import { requireCitizenSession } from '../utils/citizen-session';
+import { isCitizenPreAuthSsoRoute, requireCitizenSession } from '../utils/citizen-session';
 import { hasValidDrupalSession } from '../utils/session';
 import { preservePrivateNoStore } from '../utils/preserve-private-no-store';
 import { setPrivateNoStore } from '../utils/request-security';
 import { serverUiMode } from '../utils/ui-mode';
 import { uiRoutePolicy } from '../utils/ui-mode-routing';
+import { isSsoNamespace, rawSsoTarget, rejectSsoRequest, ssoOperation } from '../utils/sso-routing';
 
 export default defineNitroPlugin((app) => {
     const mode = serverUiMode();
@@ -17,6 +18,8 @@ export default defineNitroPlugin((app) => {
     // this middleware at the start of the actual H3 stack, ahead of both.
     app.h3App.stack.unshift({ route: '/', handler: defineEventHandler(async (event) => {
         useRuntimeConfig(event).public.uiMode = mode;
+        const rawPath = rawSsoTarget(event, base).split('?', 1)[0] || '/';
+        if (isSsoNamespace(rawPath) && !ssoOperation(rawPath)) return rejectSsoRequest(event, 404);
         if (mode !== 'citizen') return;
         const requestPath = event.path.split('?')[0] || '/';
         const path = base && requestPath.startsWith(base) ? requestPath.slice(base.length) || '/' : requestPath;
@@ -27,7 +30,8 @@ export default defineNitroPlugin((app) => {
             preservePrivateNoStore(event);
             throw createError({ statusCode: 404, statusMessage: 'Page not found' });
         }
-        if (result.api && result.api !== '/api/auth/status' && result.api !== '/api/auth/logout' && hasValidDrupalSession(event)) {
+        if (result.api && result.api !== '/api/auth/status' && result.api !== '/api/auth/logout'
+          && !isCitizenPreAuthSsoRoute(result.api) && hasValidDrupalSession(event)) {
             const otp = result.api === '/api/auth/verify-code' || result.api === '/api/auth/request-code';
             await requireCitizenSession(event, undefined, otp);
         }
